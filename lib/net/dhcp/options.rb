@@ -6,7 +6,7 @@
 **  - Daniel Martin Gomez <etd[-at-]nomejortu.com>
 **
 ** Desc:
-**   This file provides a set of classes to work with the DHCP protocol. 
+**   This file provides a set of classes to work with the DHCP protocol.
 ** Here are defined the classes to work with the different options of the
 ** protocol as defined in rfc2131, rfc2132 and rfc2563.
 **
@@ -21,21 +21,21 @@
 =end
 
 module DHCP
-  
+
   # General object to capture DHCP options. Every option of the protocol has
   # three fields: an option *type*, a defined *length* and a *payload*
   class Option
     attr_accessor :type, :len, :payload
-    
+
     # Create a DHCP option object with the given *type* and *payload*. +params+
     # must be an array containing at least these two keys: :*type* and :*payload*
     # The length is calculated with the size of the payload
     def initialize(params = {})
       # We need a type, and a payload
       if (([:type, :payload] & params.keys).size != 2)
-        raise ArgumentError('you need to specify values for :type and :payload') 
+        raise ArgumentError('you need to specify values for :type and :payload')
       end
-      
+
       self.type = params[:type]
       self.payload = params[:payload]
       self.len = params.fetch(:len, self.payload.size)
@@ -46,31 +46,31 @@ module DHCP
     def to_a
       return [self.type, self.len] + self.payload
     end
-    
+
     # Return the option packed as a binary string.
     def pack
       (self.to_a).pack('C*')
     end
-    
+
     # Check wether a given option is equivalent (protocol level) to this one.
     def eql?(obj)
       return false unless (self.class == obj.class)
-      
+
       vars = self.instance_variables
       # check all the other instance vairables
       vars.each do |var|
         return false unless (self.instance_variable_get(var) == obj.instance_variable_get(var))
-      end      
+      end
       return true
     end
     alias == eql?
-    
+
     def to_s
       "to_s NOT implemented for option type: #{self.type}"
     end
   end
 
-   
+
   # The subnet mask option specifies the client's subnet mask as per RFC
   # 950 [5].
   #
@@ -85,13 +85,13 @@ module DHCP
       params[:type] = $DHCP_SUBNETMASK
       params[:payload] = params.fetch(:payload, [255, 255, 255, 255])
       super(params)
-    end    
-    
+    end
+
     def to_s()
       "Subnet Mask = #{self.payload.join('.')}"
-    end    
+    end
   end
-  
+
 
   # The router option specifies a list of IP addresses for routers on the
   # client's subnet.  Routers SHOULD be listed in order of preference.
@@ -106,11 +106,11 @@ module DHCP
       params[:type] = $DHCP_ROUTER
       params[:payload] = params.fetch(:payload, [0, 0, 0, 0])
       super(params)
-    end    
-    
+    end
+
     def to_s()
       "Router = #{self.payload.join('.')}"
-    end        
+    end
   end
 
   # The domain name server option specifies a list of Domain Name System
@@ -119,7 +119,7 @@ module DHCP
   #
   # The code for the domain name server option is 6.  The minimum length
   # for this option is 4 octets, and the length MUST always be a multiple
-  # of 4.  
+  # of 4.
   #
   # The default value for this option is 0.0.0.0
   class DomainNameServerOption < Option
@@ -127,19 +127,19 @@ module DHCP
       params[:type] = $DHCP_DNS
       params[:payload] = params.fetch(:payload, [0, 0, 0, 0])
       super(params)
-    end    
-    
+    end
+
     def to_s()
       "Domain Name Server = #{self.payload.join('.')}"
-    end        
+    end
   end
-  
+
   # This option specifies the name of the client.  The name may or may
   # not be qualified with the local domain name (see section 3.17 for the
   # preferred way to retrieve the domain name).  See RFC 1035 for
   # character set restrictions.
   #
-  # The code for this option is 12, and its minimum length is 1.  
+  # The code for this option is 12, and its minimum length is 1.
   #
   # The default value for this option is 'caprica'
   class HostNameOption < Option
@@ -147,13 +147,13 @@ module DHCP
       params[:type] = $DHCP_DNS
       params[:payload] = params.fetch(:payload, 'caprica'.unpack('C*'))
       super(params)
-    end    
-    
+    end
+
     def to_s()
       "Host Name = #{self.payload.pack('C*')}"
-    end            
+    end
   end
-  
+
   # This option specifies the domain name that client should use when
   # resolving hostnames via the Domain Name System.
   #
@@ -165,13 +165,13 @@ module DHCP
       params[:type] = $DHCP_DOMAINNAME
       params[:payload] = params.fetch(:payload, 'nomejortu.com'.unpack('C*'))
       super(params)
-    end    
-    
+    end
+
     def to_s()
       "Domain Name = #{self.payload.pack('C*')}"
-    end        
+    end
   end
-  
+
   # This option is used in a client request (DHCPDISCOVER) to allow the
   # client to request that a particular IP address be assigned.
   #
@@ -184,12 +184,12 @@ module DHCP
       params[:payload] = params.fetch(:payload, [0, 0, 0, 0])
       super(params)
     end
-    
+
     def to_s
       "Requested IP address = #{self.payload.join('.')}"
-    end     
+    end
   end
-  
+
   # This option is used in a client request (DHCPDISCOVER or DHCPREQUEST)
   # to allow the client to request a lease time for the IP address.  In a
   # server reply (DHCPOFFER), a DHCP server uses this option to specify
@@ -198,16 +198,16 @@ module DHCP
   # The time is in units of seconds, and is specified as a 32-bit
   # unsigned integer.
   #
-  # The code for this option is 51, and its length is 4.  
-  # 
+  # The code for this option is 51, and its length is 4.
+  #
   # The default value is 7200 (2h)
   class IPAddressLeaseTimeOption < Option
     def initialize(params={})
       params[:type] = $DHCP_LEASETIME
       params[:payload] = params.fetch(:payload, [7200].pack('N').unpack('C*'))
       super(params)
-    end    
-    
+    end
+
     def to_s()
       "IP Address Lease Time = #{self.payload.pack('C*').unpack('N').first} seg"
     end
@@ -226,7 +226,7 @@ module DHCP
   #           5     DHCPACK
   #           6     DHCPNAK
   #           7     DHCPRELEASE
-  #           8     DHCPINFORM  
+  #           8     DHCPINFORM
   #
   # The default value is 1 (DHCPDISCOVER)
   class MessageTypeOption < Option
@@ -235,7 +235,7 @@ module DHCP
       params[:payload] = params.fetch(:payload, [$DHCP_MSG_DISCOVER])
       super(params)
     end
-    
+
     def to_s
       "DHCP Message Type = #{$DHCP_MSG_NAMES[self.payload[0]-1]} (#{self.payload[0]})"
     end
@@ -262,7 +262,7 @@ module DHCP
       params[:payload] = params.fetch(:payload, [0, 0, 0, 0])
       super(params)
     end
-    
+
     def to_s
       "Server Identifier = #{self.payload.join('.')}"
     end
@@ -278,7 +278,7 @@ module DHCP
   # but MUST try to insert the requested options in the order requested
   # by the client.
   #
-  # The code for this option is 55.  Its minimum length is 1.  
+  # The code for this option is 55.  Its minimum length is 1.
   #
   # The default value is: $DHCP_SUBNETMASK | $DHCP_ROUTER | $DHCP_DNS | $DHCP_DOMAINNAME
   class ParameterRequestListOption < Option
@@ -287,11 +287,11 @@ module DHCP
       params[:payload] = params.fetch(:payload, [$DHCP_SUBNETMASK, $DHCP_ROUTER, $DHCP_DNS, $DHCP_DOMAINNAME])
       super(params)
     end
-    
+
     def to_s
       "Parameter Request List = #{self.payload}"
     end
-  end  
+  end
 
   # This option is used by DHCP clients to optionally identify the vendor
   # type and configuration of a DHCP client.  The information is a string
@@ -313,13 +313,13 @@ module DHCP
       params[:type] = $DHCP_CLASSSID
       params[:payload] = params.fetch(:payload, 'etdsoft'.unpack('C*'))
       super(params)
-    end    
-    
+    end
+
     def to_s()
       "Vendor class identifier = #{self.payload.pack('C*')}"
-    end   
-  end    
-  
+    end
+  end
+
 
   # This option is used by DHCP clients to specify their unique
   # identifier.  DHCP servers use this value to index their database of
@@ -351,12 +351,12 @@ module DHCP
       params[:payload] = params.fetch(:payload, [0x69, 0x69])
       super(params)
     end
-    
+
     def to_s
       "Client Identifier = #{self.payload}"
-    end    
+    end
   end
-  
+
   # Option that can be used to exchange information about a
   # DHCPv4 client's fully qualified domain name and about responsibility
   # for updating the DNS RR related to the client's address assignment.
@@ -372,12 +372,12 @@ module DHCP
       params[:payload] = params.fetch(:payload, 'etd'.unpack('C*'))
       super(params)
     end
-    
+
     def to_s
       "Client Fully Qualified Domain Name = #{self.payload.pack('C*')}"
-    end        
+    end
   end
-  
+
   # Octet "n" gives the number of octets containing "architecture types"
   # (not including the code and len fields).  It MUST be an even number
   # greater than zero.  Clients that support more than one architecture
@@ -386,7 +386,7 @@ module DHCP
   # reduced in any packet exchange between the client and server(s).
   # Octets "n1" and "n2" encode a 16-bit architecture type identifier
   # that describes the pre-boot runtime environment(s) of the client
-  # machine.  
+  # machine.
   #
   # See rfc4578 for full details
   #
@@ -394,7 +394,7 @@ module DHCP
   # greater than zero.
   #
   # The default payload for this option is $DHCP_CLIENTARCH_I386
-  class ClientSystemArchitectureOption
+  class ClientSystemArchitectureOption < Option
     def initialize(params={})
       params[:type] =  $DHCP_CLIENTARCH
       params[:payload] = params.fetch(:payload, [$DHCP_CLIENTARCH_I386].pack('n').unpack('C*'))
@@ -407,9 +407,9 @@ module DHCP
       else
         arch = $DHCP_CLIENTARCH_NAMES[arch_id]
       end
-      
+
       "Client System Architecture = #{arch}"
-    end            
+    end
   end
 
   # Octet "t" encodes a network interface type.  For now the only
@@ -423,16 +423,16 @@ module DHCP
   # The code for this option is 94, and its length is 3.
   #
   # The default payload for this option is 0,0x69,0x69
-  class ClientNetworkDeviceInterfaceOption
+  class ClientNetworkDeviceInterfaceOption < Option
     def initialize(params={})
       params[:type] =  $DHCP_CLIENTNDI
       params[:payload] = params.fetch(:payload, [0]+[0x69]*2)
       super(params)
     end
     def to_s
-      uuid = self.payload.unpack('C*')
+      uuid = self.payload.pack('n').unpack('C*')
       "Client Network Device Interface = #{uuid}"
-    end            
+    end
   end
 
   # Octet "t" describes the type of the machine identifier in the
@@ -440,7 +440,7 @@ module DHCP
   # for this octet at the present time, and it describes the remaining
   # octets as a 16-octet Globally Unique Identifier (GUID).  Octet "n" is
   # 17 for type 0.  (One definition of GUID can be found in Appendix A of
-  # the EFI specification [4].)  
+  # the EFI specification [4].)
   #
   # See rfc4578 for full details
   #
@@ -448,7 +448,7 @@ module DHCP
   # identifier and 16 for a Globally Unique Identifier.
   #
   # The default payload for this option is 0, [0x69]*16
-  class UUIDGUIDOption
+  class UUIDGUIDOption < Option
     def initialize(params={})
       params[:type] =  $DHCP_UUIDGUID
       params[:payload] = params.fetch(:payload, [0]+[0x69]*16)
@@ -456,9 +456,53 @@ module DHCP
     end
     def to_s
       "UUID/GUID Client Identifier = #{self.payload}"
-    end            
+    end
   end
-  
+
+
+  # from rfc2132:
+  # This option specifies the maximum length DHCP message that it is
+  # willing to accept.  The length is specified as an unsigned 16-bit
+  # integer.  A client may use the maximum DHCP message size option in
+  # DHCPDISCOVER or DHCPREQUEST messages, but should not use the option
+  # in DHCPDECLINE messages.
+  class MaximumMsgSizeOption < Option
+    def initialize(params={})
+      params[:type] = $DHCP_MAXMSGSIZE
+      params[:payload] = params.fetch(:payload, [1024].pack('n').unpack('C*'))
+      super(params)
+    end
+
+    def to_s
+      "Maximum Message Size = #{self.payload}"
+    end
+  end
+
+  # see: rfc3004
+  class UserClassInformationOption < Option
+    def initialize(params={})
+      params[:type] = $DHCP_USERCLASS
+      params[:payload] = params.fetch(:payload, [0x67, 0x50, 0x58, 0x45] )
+      super(params)
+    end
+
+    def to_s
+      "UserClassInformation = #{self.payload}"
+    end
+  end
+
+  class PrivateOption < Option
+    def initialize(params={})
+      params[:type]    = params.fetch(:private_type_num, $DHCP_PRIVATE)
+      params[:payload] = params.fetch(:payload, [0x00] )
+      super(params)
+    end
+
+    def to_s
+      "Private = #{self.payload}"
+    end
+  end
+
   # Operating Systems are now attempting to support ad-hoc networks of
   # two or more systems, while keeping user configuration at a minimum.
   # To accommodate this, in the absence of a central configuration
@@ -469,7 +513,7 @@ module DHCP
   # fact that a host with no DHCP response will have no IP address.  This
   # document describes a mechanism by which DHCP servers are able to tell
   # clients that they do not have an IP address to offer, and that the
-  # client should not generate an IP address it's own.  
+  # client should not generate an IP address it's own.
   #
   # See rfc2563 for full details
   #
@@ -482,12 +526,12 @@ module DHCP
       params[:payload] = params.fetch(:payload, [$DHCP_AUTOCONF_YES])
       super(params)
     end
-    
+
     def to_s
       "DHCP Auto-Configuration = #{self.payload == $DHCP_AUTOCONF_YES ? 'Yes' :  'No' }"
-    end        
+    end
   end
-  
+
   $DHCP_MSG_OPTIONS = {
     $DHCP_SUBNETMASK => SubnetMaskOption,
     $DHCP_TIMEOFFSET => Option,
@@ -546,7 +590,7 @@ module DHCP
     $DHCP_SERVIDENT => ServerIdentifierOption,
     $DHCP_PARAMREQUEST => ParameterRequestListOption,
     $DHCP_MESSAGE => Option,
-    $DHCP_MAXMSGSIZE => Option,
+    $DHCP_MAXMSGSIZE => MaximumMsgSizeOption,
     $DHCP_RENEWTIME => Option,
     $DHCP_REBINDTIME => Option,
     $DHCP_CLASSSID => VendorClassIDOption,
@@ -562,6 +606,8 @@ module DHCP
     $DHCP_IRCSERVER => Option,
     $DHCP_STSERVER => Option,
     $DHCP_STDASERVER => Option,
+    $DHCP_USERCLASS => UserClassInformationOption,
+    $DHCP_PRIVATE => PrivateOption,
 
     $DHCP_CLIENTFQDN => ClientFQDNOption,
     $DHCP_CLIENTARCH => ClientSystemArchitectureOption,

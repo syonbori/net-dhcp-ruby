@@ -6,15 +6,15 @@
 **  - Daniel Martin Gomez <etd[-at-]nomejortu.com>
 **
 ** Desc:
-**   This file provides a set of classes to work with the DHCP protocol. They 
+**   This file provides a set of classes to work with the DHCP protocol. They
 ** provide low level access to all the fields and internals of the protocol.
-** 
+**
 ** See the provided rdoc comments for further information.
 **
 ** More information in:
 **   - rfc2131: Dynamic Host Configuration Protocol
 **   - rfc2132: DHCP Options and BOOTP Vendor Extensions
-**   - rfc2563: DHCP Option to Disable Stateless Auto-Configuration in 
+**   - rfc2563: DHCP Option to Disable Stateless Auto-Configuration in
 **              IPv4 Clients
 **
 ** Version:
@@ -40,7 +40,7 @@ $DHCP_MSG_ACK=         0x05
 $DHCP_MSG_NACK=        0x06
 $DHCP_MSG_RELEASE=     0x07
 $DHCP_MSG_INFORM=      0x08
-$DHCP_MSG_NAMES = [ 
+$DHCP_MSG_NAMES = [
   'DHCP Discover',
   'DHCP Offer',
   'DHCP Request',
@@ -53,7 +53,7 @@ $DHCP_MSG_NAMES = [
 
 # ---------------------------------------------------------------- other fields
 
-# hardware types. see "Number Hardware Type (hrd)" in rfc 1700. 
+# hardware types. see "Number Hardware Type (hrd)" in rfc 1700.
 $DHCP_HTYPE_ETHERNET = 0x01
 $DHCP_HLEN_ETHERNET = 0x06
 
@@ -127,6 +127,8 @@ $DHCP_CLASSSID=       0x3c
 $DHCP_CLIENTID=       0x3d
 $DHCP_NISPLUSDOMAIN=  0x40
 $DHCP_NISPLUSSERVERS= 0x41
+$DHCP_TFTPSERVER=     0x42
+$DHCP_BOOTFILENAME=   0x43
 $DHCP_MOBILEIPAGENT=  0x44
 $DHCP_SMTPSERVER=     0x45
 $DHCP_POP3SERVER=     0x46
@@ -136,6 +138,8 @@ $DHCP_FINGERSERVER=   0x49
 $DHCP_IRCSERVER=      0x4a
 $DHCP_STSERVER=       0x4b
 $DHCP_STDASERVER=     0x4c
+$DHCP_USERCLASS=      0x4d
+$DHCP_PRIVATE=        0xaf
 $DHCP_END=            0xff
 # / as defined in rfc2132
 
@@ -167,7 +171,7 @@ $DHCP_CLIENTARCH_NAMES = [
       'EFI Xscale',
       'EFI x86-64',
       ]
-              
+
 $DHCP_CLIENTNDI=      0x5e #rfc4578
 #$DHCP_LDAP=           0x5f
 $DHCP_UUIDGUID=       0x61 #rfc4578
@@ -175,4 +179,4 @@ $DHCP_UUIDGUID=       0x61 #rfc4578
 $DHCP_AUTOCONF=       0x74 #rfc2563
 $DHCP_AUTOCONF_NO=    0x00 #rfc2563
 $DHCP_AUTOCONF_YES=   0x01 #rfc2563
-   
+
